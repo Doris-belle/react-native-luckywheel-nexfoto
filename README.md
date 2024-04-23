@@ -1,6 +1,8 @@
 # react-native-spin-the-wheel
 
-A react native package for spin the wheel game
+## React Native Wheel Component
+
+The React Native Wheel Component is a customizable spinning wheel component for React Native applications. It allows users to spin a wheel with customizable segments and provides callbacks for handling the result of the spin.
 
 ## Installation
 
@@ -11,11 +13,64 @@ npm install react-native-spin-the-wheel
 ## Usage
 
 ```js
-import { multiply } from 'react-native-spin-the-wheel';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import Wheel, { WheelComponentProps } from 'react-native-wheel-component';
 
-// ...
+const MyComponent: React.FC = () => {
+  const [result, setResult] = useState('');
 
-const result = await multiply(3, 7);
+  const segments = [
+    { text: 'Segment 1' },
+    { text: 'Segment 2' },
+    // Add more segments as needed
+  ];
+
+  const onFinished = (segment: any) => {
+    setResult(segment);
+  };
+
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Wheel
+        segments={segments}
+        segColors={['red', 'green']} // Example segment colors
+        textColors={['black', 'white']} // Example text colors
+        onFinished={onFinished}
+        pinImage={require('./path/to/pinImage.png')} // Example pin image
+        // Add more props as needed
+      />
+      <Text>Result: {result}</Text>
+    </View>
+  );
+};
+
+export default MyComponent;
+
+```
+
+## Props
+
+```js
+interface WheelComponentProps {
+    segments: { text: string }[];
+    segColors: string[];
+    textColors: string[];
+    onFinished: (segment: any) => void;
+    primaryColor?: string;
+    contrastColor?: string;
+    buttonText?: string;
+    size?: number;
+    upDuration?: number;
+    downDuration?: number;
+    fontFamily?: string;
+    fontSize?: string;
+    strokeColor?: string;
+    outlineWidth?: number;
+    buttonStyle?: any;
+    buttonTextStyles?: any;
+    pinImage: any;
+}
 ```
 
 ## Contributing

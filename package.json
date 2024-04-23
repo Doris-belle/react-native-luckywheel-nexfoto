@@ -1,6 +1,6 @@
 {
   "name": "react-native-spin-the-wheel",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A react native package for spin the wheel game",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -155,5 +155,14 @@
         }
       ]
     ]
+  },
+  "dependencies": {
+    "react-native-gesture-handler": "^2.16.0",
+    "react-native-reanimated": "^3.8.1",
+    "react-native-svg": "^15.1.0"
+  },
+  "directories": {
+    "example": "example",
+    "lib": "lib"
   }
 }

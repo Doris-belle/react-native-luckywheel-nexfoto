@@ -1,18 +1,32 @@
 import * as React from 'react';
 
-import { StyleSheet, View, Text } from 'react-native';
-import { multiply } from 'react-native-spin-the-wheel';
+import { StyleSheet, View } from 'react-native';
+import Wheel from 'react-native-spin-the-wheel';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
+  const segments = [
+    { text: 'Grey', textColour: 'red', backgroundColour: 'white' },
+    { text: 'Green', textColour: 'white', backgroundColour: 'red' },
+    { text: 'Red', textColour: 'red', backgroundColour: 'white' },
+    { text: 'Blue', textColour: 'white', backgroundColour: 'red' },
+    { text: 'Orange', textColour: 'red', backgroundColour: 'white' },
+    { text: 'Black', textColour: 'white', backgroundColour: 'red' },
+  ];
 
-  React.useEffect(() => {
-    multiply(3, 7).then(setResult);
-  }, []);
-
+  const finishedSpinning = (segment: string) => {
+    console.log('Winner', segment);
+  };
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <Wheel
+        segments={segments}
+        segColors={segments.map((segment) => segment.backgroundColour)}
+        onFinished={(segment: any) => finishedSpinning(segment.text)}
+        primaryColor={'white'}
+        textColors={segments.map((segment) => segment.textColour)}
+        buttonText="Spin the Wheel"
+        pinImage={require('../assets/pin.png')}
+      />
     </View>
   );
 }
