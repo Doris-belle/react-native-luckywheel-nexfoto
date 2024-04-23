@@ -8,6 +8,13 @@ The React Native Wheel Component is a customizable spinning wheel component for 
 
 ```sh
 npm install react-native-spin-the-wheel
+npm install react-native-svg
+```
+
+## Dependencies
+
+```sh
+react-native-svg
 ```
 
 ## Usage
