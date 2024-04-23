@@ -73,6 +73,15 @@ interface WheelComponentProps {
 }
 ```
 
+## Screenshots
+
+![1000025123](https://github.com/shrutigxuriti/react-native-spin-the-wheel/assets/131851981/9ef0b235-43f4-467a-a3f9-304be8df5e8f)
+
+https://github.com/shrutigxuriti/react-native-spin-the-wheel/assets/131851981/5a0570a0-6344-4c6b-ac07-591c539c1f5d
+
+
+
+
 ## Contributing
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
