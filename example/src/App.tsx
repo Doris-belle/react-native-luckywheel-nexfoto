@@ -1,20 +1,22 @@
 import * as React from 'react';
 
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Wheel from 'react-native-spin-the-wheel';
 
 export default function App() {
+  const [winnerName, setWinnerName] = React.useState('');
   const segments = [
-    { text: 'Grey', textColour: 'red', backgroundColour: 'white' },
-    { text: 'Green', textColour: 'white', backgroundColour: 'red' },
-    { text: 'Red', textColour: 'red', backgroundColour: 'white' },
-    { text: 'Blue', textColour: 'white', backgroundColour: 'red' },
-    { text: 'Orange', textColour: 'red', backgroundColour: 'white' },
-    { text: 'Black', textColour: 'white', backgroundColour: 'red' },
+    { text: 'Grey', textColour: 'white', backgroundColour: '#5861D0' },
+    { text: 'Green', textColour: 'white', backgroundColour: '#3B3CAD' },
+    { text: 'Red', textColour: 'white', backgroundColour: '#5861D0' },
+    { text: 'Blue', textColour: 'white', backgroundColour: '#3B3CAD' },
+    { text: 'Orange', textColour: 'white', backgroundColour: '#5861D0' },
+    { text: 'Black', textColour: 'white', backgroundColour: '#3B3CAD' },
   ];
 
   const finishedSpinning = (segment: string) => {
     console.log('Winner', segment);
+    setWinnerName(segment);
   };
   return (
     <View style={styles.container}>
@@ -22,11 +24,18 @@ export default function App() {
         segments={segments}
         segColors={segments.map((segment) => segment.backgroundColour)}
         onFinished={(segment: any) => finishedSpinning(segment.text)}
-        primaryColor={'white'}
+        primaryColor={'#5861D0'}
         textColors={segments.map((segment) => segment.textColour)}
         buttonText="Spin the Wheel"
         pinImage={require('../assets/pin.png')}
+        outlineWidth={1}
+        buttonStyle={{
+          backgroundColor: '#527800',
+        }}
       />
+      {winnerName !== '' && (
+        <Text style={{ marginTop: 30 }}>Winner: {winnerName}</Text>
+      )}
     </View>
   );
 }
