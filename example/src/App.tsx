@@ -6,12 +6,42 @@ import Wheel from 'react-native-spin-the-wheel';
 export default function App() {
   const [winnerName, setWinnerName] = React.useState('');
   const segments = [
-    { text: 'Grey', textColour: 'white', backgroundColour: '#5861D0' },
-    { text: 'Green', textColour: 'white', backgroundColour: '#3B3CAD' },
-    { text: 'Red', textColour: 'white', backgroundColour: '#5861D0' },
-    { text: 'Blue', textColour: 'white', backgroundColour: '#3B3CAD' },
-    { text: 'Orange', textColour: 'white', backgroundColour: '#5861D0' },
-    { text: 'Black', textColour: 'white', backgroundColour: '#3B3CAD' },
+    {
+      text: 'Unlimited Cloud Storage',
+      textColour: '#000000',
+      backgroundColour: '#FFF',
+      icon: require('../assets/cloud-purple.png'),
+    },
+    {
+      text: 'Thank you for participating',
+      textColour: '#CE7E27',
+      backgroundColour: '#FED2A2',
+      icon: require('../assets/cheers.png'),
+    },
+    {
+      text: 'Unlimited Cloud Storage',
+      textColour: '#000000',
+      backgroundColour: '#FFF',
+      icon: require('../assets/cloud-purple.png'),
+    },
+    {
+      text: 'Thank you for participating',
+      textColour: '#CE7E27',
+      backgroundColour: '#FED2A2',
+      icon: require('../assets/cheers.png'),
+    },
+    {
+      text: 'Unlimited Cloud Storage',
+      textColour: '#000000',
+      backgroundColour: '#FFF',
+      icon: require('../assets/cloud-purple.png'),
+    },
+    {
+      text: 'Thank you for participating',
+      textColour: '#CE7E27',
+      backgroundColour: '#FED2A2',
+      icon: require('../assets/cheers.png'),
+    },
   ];
 
   const finishedSpinning = (segment: string) => {
@@ -24,16 +54,29 @@ export default function App() {
         segments={segments}
         segColors={segments.map((segment) => segment.backgroundColour)}
         onFinished={(segment: any) => finishedSpinning(segment.text)}
-        primaryColor={'#5861D0'}
+        primaryColor={'#FF6B35'}
         textColors={segments.map((segment) => segment.textColour)}
-        buttonText="Spin the Wheel"
+        buttonText="Immediately Lottery"
         pinImage={require('../assets/pin.png')}
-        outlineWidth={1}
+        backgroundImage={require('../assets/out.png')}
+        gradientColor="#FFE170"
+        outlineWidth={0}
+        // eslint-disable-next-line react-native/no-inline-styles
         buttonStyle={{
-          backgroundColor: '#527800',
+          backgroundColor: '#FFF8AD',
+          borderRadius: 50,
+          width: 240,
+          height: 48,
+        }}
+        // eslint-disable-next-line react-native/no-inline-styles
+        buttonTextStyles={{
+          color: '#000000',
+          fontSize: 18,
+          fontWeight: 'bold',
         }}
       />
       {winnerName !== '' && (
+        // eslint-disable-next-line react-native/no-inline-styles
         <Text style={{ marginTop: 30 }}>Winner: {winnerName}</Text>
       )}
     </View>

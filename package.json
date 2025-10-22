@@ -1,6 +1,6 @@
 {
-  "name": "react-native-spin-the-wheel",
-  "version": "0.1.11",
+  "name": "react-native-luckywheel-nexfoto",
+  "version": "0.1.12",
   "description": "A react native package for spin the wheel game",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -41,9 +41,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/shrutigxuriti/react-native-spin-the-wheel.git"
+    "url": "git+https://github.com/Doris-belle/react-native-luckywheel-nexfoto.git"
   },
-  "author": "shrutigxuriti <shruti.ghosh@xuriti.com> (https://github.com/shrutigxuriti)",
+  "author": "dorisw <wangyaoyao0728@163.com> (https://github.com/Doris-belle)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/shrutigxuriti/react-native-spin-the-wheel/issues"
