@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { StyleSheet, Text, View } from 'react-native';
-import Wheel from 'react-native-spin-the-wheel';
+import Wheel from 'react-native-luckywheel-nexfoto';
 
 export default function App() {
   const [winnerName, setWinnerName] = React.useState('');

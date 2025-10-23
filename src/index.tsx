@@ -31,6 +31,7 @@ export interface WheelComponentProps {
   pinImage: any;
   backgroundImage?: any;
   gradientColor?: string;
+  targetSegmentIndex?: number; // 控制最终停止的扇形索引
 }
 
 const Wheel: React.FC<WheelComponentProps> = ({
@@ -50,6 +51,7 @@ const Wheel: React.FC<WheelComponentProps> = ({
   pinImage,
   backgroundImage,
   gradientColor = '#FFE170',
+  targetSegmentIndex,
 }: WheelComponentProps) => {
   const svgRef = useRef<Svg>(null);
   let timerHandle: number | NodeJS.Timeout = 0;
@@ -63,7 +65,21 @@ const Wheel: React.FC<WheelComponentProps> = ({
 
   const spin = () => {
     if (timerHandle === 0) {
-      angleCurrent = Math.random() * Math.PI * 2;
+      if (
+        targetSegmentIndex !== undefined &&
+        targetSegmentIndex >= 0 &&
+        targetSegmentIndex < segments.length
+      ) {
+        const targetAngle =
+          (2 * Math.PI * targetSegmentIndex) / segments.length;
+        const adjustedAngle =
+          2 * Math.PI - targetAngle - Math.PI / segments.length;
+        angleCurrent =
+          adjustedAngle +
+          (Math.random() * 0.2 - 0.1) * (Math.PI / segments.length);
+      } else {
+        angleCurrent = Math.random() * Math.PI * 2;
+      }
       spinStart = new Date().getTime();
       maxSpeed = Math.PI / segments.length;
       timerHandle = setInterval(onTimerTick, timerDelay);
