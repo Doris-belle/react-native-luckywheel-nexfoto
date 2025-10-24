@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useImperativeHandle, forwardRef } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import Svg, {
   Circle,
@@ -34,77 +34,95 @@ export interface WheelComponentProps {
   targetSegmentIndex?: number; // 控制最终停止的扇形索引
 }
 
-const Wheel: React.FC<WheelComponentProps> = ({
-  segments,
-  segColors,
-  textColors,
-  onFinished,
-  strokeColor = 'black',
-  primaryColor = 'white',
-  buttonText = 'Spin the Wheel',
-  size = 268,
-  upDuration = 100,
-  downDuration = 1000,
-  outlineWidth = 3,
-  buttonStyle,
-  buttonTextStyles,
-  pinImage,
-  backgroundImage,
-  gradientColor = '#FFE170',
-  targetSegmentIndex,
-}: WheelComponentProps) => {
-  const svgRef = useRef<Svg>(null);
-  let timerHandle: number | NodeJS.Timeout = 0;
+// 定义暴露给ref的方法接口
+export interface WheelRefMethods {
+  spin: () => void;
+}
+
+const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
+  const {
+    segments,
+    segColors,
+    textColors,
+    onFinished,
+    strokeColor = 'black',
+    primaryColor = 'white',
+    buttonText = 'Spin the Wheel',
+    size = 268,
+    upDuration = 100,
+    downDuration = 1000,
+    outlineWidth = 3,
+    buttonStyle,
+    buttonTextStyles,
+    pinImage,
+    backgroundImage,
+    gradientColor = '#FFE170',
+    targetSegmentIndex,
+  } = props;
+
+  const svgRef = useRef<any>(null);
+  const timerHandleRef = useRef<number | NodeJS.Timeout>(0);
+  const angleCurrentRef = useRef<number>(0);
+  const angleDeltaRef = useRef<number>(0);
+  const maxSpeedRef = useRef<number>(Math.PI / segments.length);
+  const spinStartRef = useRef<number>(0);
+
   const timerDelay = segments.length;
-  let angleCurrent = 0;
-  let angleDelta = 0;
-  let maxSpeed = Math.PI / segments.length;
   const upTime = segments.length * upDuration;
   const downTime = segments.length * downDuration;
-  let spinStart = 0;
 
   const spin = () => {
-    if (timerHandle === 0) {
+    if (timerHandleRef.current === 0) {
       if (
         targetSegmentIndex !== undefined &&
         targetSegmentIndex >= 0 &&
         targetSegmentIndex < segments.length
       ) {
+        console.log('****', targetSegmentIndex);
         const targetAngle =
           (2 * Math.PI * targetSegmentIndex) / segments.length;
         const adjustedAngle =
           2 * Math.PI - targetAngle - Math.PI / segments.length;
-        angleCurrent =
+        angleCurrentRef.current =
           adjustedAngle +
           (Math.random() * 0.2 - 0.1) * (Math.PI / segments.length);
       } else {
-        angleCurrent = Math.random() * Math.PI * 2;
+        angleCurrentRef.current = Math.random() * Math.PI * 2;
       }
-      spinStart = new Date().getTime();
-      maxSpeed = Math.PI / segments.length;
-      timerHandle = setInterval(onTimerTick, timerDelay);
+      spinStartRef.current = new Date().getTime();
+      maxSpeedRef.current = Math.PI / segments.length;
+      timerHandleRef.current = setInterval(onTimerTick, timerDelay);
     }
   };
 
+  // 使用useImperativeHandle暴露方法给父组件
+  useImperativeHandle(ref, () => ({
+    spin,
+  }));
+
   const onTimerTick = () => {
-    const duration = new Date().getTime() - spinStart;
+    const duration = new Date().getTime() - spinStartRef.current;
     let progress = 0;
     let finished = false;
     if (duration < upTime) {
       progress = duration / upTime;
-      angleDelta = maxSpeed * Math.sin((progress * Math.PI) / 2);
+      angleDeltaRef.current =
+        maxSpeedRef.current * Math.sin((progress * Math.PI) / 2);
     } else {
       progress = duration / downTime;
-      angleDelta = maxSpeed * Math.sin((progress * Math.PI) / 2 + Math.PI / 2);
+      angleDeltaRef.current =
+        maxSpeedRef.current * Math.sin((progress * Math.PI) / 2 + Math.PI / 2);
       if (progress >= 1) finished = true;
     }
 
-    angleCurrent += angleDelta;
-    while (angleCurrent >= Math.PI * 2) angleCurrent -= Math.PI * 2;
+    angleCurrentRef.current += angleDeltaRef.current;
+    while (angleCurrentRef.current >= Math.PI * 2)
+      angleCurrentRef.current -= Math.PI * 2;
     if (finished) {
-      clearInterval(timerHandle);
-      timerHandle = 0;
-      const rotationAdjustment = (angleCurrent + Math.PI / 2) % (Math.PI * 2);
+      clearInterval(timerHandleRef.current);
+      timerHandleRef.current = 0;
+      const rotationAdjustment =
+        (angleCurrentRef.current + Math.PI / 2) % (Math.PI * 2);
       const segmentIndex = Math.floor(
         (rotationAdjustment / (Math.PI * 2)) * segments.length
       );
@@ -118,7 +136,7 @@ const Wheel: React.FC<WheelComponentProps> = ({
 
   const draw = () => {
     svgRef.current?.setNativeProps({
-      style: { transform: [{ rotate: `${angleCurrent}rad` }] },
+      style: { transform: [{ rotate: `${angleCurrentRef.current}rad` }] },
     });
   };
 
@@ -324,7 +342,7 @@ const Wheel: React.FC<WheelComponentProps> = ({
       </TouchableOpacity>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   wheelContainer: {
