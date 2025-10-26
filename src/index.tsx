@@ -76,7 +76,7 @@ const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
       if (
         targetSegmentIndex !== undefined &&
         targetSegmentIndex >= 0 &&
-        targetSegmentIndex < segments.length
+        targetSegmentIndex <= segments.length
       ) {
         console.log('****', targetSegmentIndex);
         const targetAngle =
