@@ -31,6 +31,7 @@ export interface WheelComponentProps {
   pinImage: any;
   backgroundImage?: any;
   gradientColor?: string;
+  showGradient?: boolean;
   targetSegmentIndex?: number; // 控制最终停止的扇形索引
 }
 
@@ -57,6 +58,7 @@ const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
     pinImage,
     backgroundImage,
     gradientColor = '#FFE170',
+    showGradient = true,
     targetSegmentIndex,
   } = props;
 
@@ -173,13 +175,23 @@ const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
           height={size}
           viewBox={`-${outlineWidth / 2} -${outlineWidth / 2} ${size + outlineWidth} ${size + outlineWidth}`}
         >
-          <Defs>
-            <RadialGradient id="innerGradient" cx="50%" cy="50%" r="50%">
-              <Stop offset="87%" stopColor={gradientColor} stopOpacity="0" />
-              <Stop offset="93%" stopColor={gradientColor} stopOpacity="0.3" />
-              <Stop offset="100%" stopColor={gradientColor} stopOpacity="0.7" />
-            </RadialGradient>
-          </Defs>
+          {showGradient && (
+            <Defs>
+              <RadialGradient id="innerGradient" cx="50%" cy="50%" r="50%">
+                <Stop offset="87%" stopColor={gradientColor} stopOpacity="0" />
+                <Stop
+                  offset="93%"
+                  stopColor={gradientColor}
+                  stopOpacity="0.3"
+                />
+                <Stop
+                  offset="100%"
+                  stopColor={gradientColor}
+                  stopOpacity="0.7"
+                />
+              </RadialGradient>
+            </Defs>
+          )}
           {segments.map((_, index) => {
             const startAngle = (2 * Math.PI * index) / segments.length;
             const endAngle = (2 * Math.PI * (index + 1)) / segments.length;
@@ -195,12 +207,14 @@ const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
             );
           })}
           {/* 内部渐变覆盖层 - 放在扇形之后 */}
-          <Circle
-            cx={size / 2}
-            cy={size / 2}
-            r={size / 2}
-            fill="url(#innerGradient)"
-          />
+          {showGradient && (
+            <Circle
+              cx={size / 2}
+              cy={size / 2}
+              r={size / 2}
+              fill="url(#innerGradient)"
+            />
+          )}
           {segments.map((segment, index) => {
             const startAngle = (2 * Math.PI * index) / segments.length;
             const endAngle = (2 * Math.PI * (index + 1)) / segments.length;
@@ -330,10 +344,10 @@ const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
           // eslint-disable-next-line react-native/no-inline-styles
           style={{
             position: 'absolute',
-            height: 100,
-            width: 100,
-            left: size / 2 - 50,
-            top: size / 2 - 50,
+            height: 62,
+            width: 48,
+            left: size / 2 - 24,
+            top: size / 2 - 32,
           }}
         />
       </View>

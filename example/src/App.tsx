@@ -60,6 +60,7 @@ export default function App() {
         pinImage={require('../assets/pin.png')}
         backgroundImage={require('../assets/out.png')}
         gradientColor="#FFE170"
+        showGradient={true}
         outlineWidth={0}
         // eslint-disable-next-line react-native/no-inline-styles
         buttonStyle={{
