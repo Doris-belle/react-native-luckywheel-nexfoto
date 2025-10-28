@@ -33,6 +33,7 @@ export interface WheelComponentProps {
   gradientColor?: string;
   showGradient?: boolean;
   targetSegmentIndex?: number; // 控制最终停止的扇形索引
+  isIOS?: boolean; // 新增：是否为iOS系统
 }
 
 // 定义暴露给ref的方法接口
@@ -60,6 +61,7 @@ const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
     gradientColor = '#FFE170',
     showGradient = true,
     targetSegmentIndex,
+    isIOS = false, // 新增：默认为false，即非iOS系统
   } = props;
 
   const svgRef = useRef<any>(null);
@@ -80,9 +82,11 @@ const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
         targetSegmentIndex >= 0 &&
         targetSegmentIndex <= segments.length
       ) {
-        console.log('****', targetSegmentIndex);
-        const targetAngle =
-          (2 * Math.PI * targetSegmentIndex) / segments.length;
+        // 根据isIOS属性决定是否添加偏移量
+        const targetAngle = isIOS
+          ? (2 * Math.PI * targetSegmentIndex) / segments.length +
+            Math.PI / segments.length
+          : (2 * Math.PI * targetSegmentIndex) / segments.length;
         const adjustedAngle =
           2 * Math.PI - targetAngle - Math.PI / segments.length;
         angleCurrentRef.current =
