@@ -1,5 +1,12 @@
 import React, { useRef, useImperativeHandle, forwardRef } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  Animated,
+} from 'react-native';
 import Svg, {
   Circle,
   Path,
@@ -20,8 +27,6 @@ export interface WheelComponentProps {
   contrastColor?: string;
   buttonText?: string;
   size?: number;
-  upDuration?: number;
-  downDuration?: number;
   fontFamily?: string;
   fontSize?: string;
   strokeColor?: string;
@@ -32,14 +37,16 @@ export interface WheelComponentProps {
   backgroundImage?: any;
   gradientColor?: string;
   showGradient?: boolean;
-  targetSegmentIndex?: number; // 控制最终停止的扇形索引
-  isIOS?: boolean; // 新增：是否为iOS系统
+  targetSegmentIndex?: number; // 控制最终停止的扇形索引 (从1开始)
 }
 
 // 定义暴露给ref的方法接口
 export interface WheelRefMethods {
   spin: () => void;
 }
+
+// 创建可动画的SVG组件
+const AnimatedSvg = Animated.createAnimatedComponent(Svg);
 
 const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
   const {
@@ -49,10 +56,9 @@ const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
     onFinished,
     strokeColor = 'black',
     primaryColor = 'white',
+    fontFamily = 'Arial',
     buttonText = 'Spin the Wheel',
     size = 268,
-    upDuration = 100,
-    downDuration = 1000,
     outlineWidth = 3,
     buttonStyle,
     buttonTextStyles,
@@ -61,90 +67,84 @@ const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
     gradientColor = '#FFE170',
     showGradient = true,
     targetSegmentIndex,
-    isIOS = false, // 新增：默认为false，即非iOS系统
   } = props;
 
-  const svgRef = useRef<any>(null);
-  const timerHandleRef = useRef<number | NodeJS.Timeout>(0);
-  const angleCurrentRef = useRef<number>(0);
-  const angleDeltaRef = useRef<number>(0);
-  const maxSpeedRef = useRef<number>(Math.PI / segments.length);
-  const spinStartRef = useRef<number>(0);
+  // 使用Animated.Value来控制旋转
+  const rotationAnim = useRef(new Animated.Value(0)).current;
+  const isSpinning = useRef(false);
 
-  const timerDelay = segments.length;
-  const upTime = segments.length * upDuration;
-  const downTime = segments.length * downDuration;
+  // 计算每个扇区的角度（弧度）
+  const segmentAngle = (2 * Math.PI) / segments.length;
 
   const spin = () => {
-    if (timerHandleRef.current === 0) {
-      if (
-        targetSegmentIndex !== undefined &&
-        targetSegmentIndex >= 0 &&
-        targetSegmentIndex <= segments.length
-      ) {
-        // 根据isIOS属性决定是否添加偏移量
-        const targetAngle = isIOS
-          ? (2 * Math.PI * targetSegmentIndex) / segments.length +
-            Math.PI / segments.length
-          : (2 * Math.PI * targetSegmentIndex) / segments.length;
-        const adjustedAngle =
-          2 * Math.PI - targetAngle - Math.PI / segments.length;
-        angleCurrentRef.current =
-          adjustedAngle +
-          (Math.random() * 0.2 - 0.1) * (Math.PI / segments.length);
-      } else {
-        angleCurrentRef.current = Math.random() * Math.PI * 2;
-      }
-      spinStartRef.current = new Date().getTime();
-      maxSpeedRef.current = Math.PI / segments.length;
-      timerHandleRef.current = setInterval(onTimerTick, timerDelay);
+    // 防止重复点击
+    if (isSpinning.current) {
+      return;
     }
+
+    isSpinning.current = true;
+    let finalRotationAngle = 0;
+
+    if (
+      targetSegmentIndex !== undefined &&
+      targetSegmentIndex >= 1 && // 修正：索引从1开始，所以检查 >= 1
+      targetSegmentIndex <= segments.length // 修正：检查 <= length
+    ) {
+      // --- 核心修正：将从1开始的索引转换为从0开始 ---
+      const zeroBasedIndex = targetSegmentIndex - 1;
+
+      // 计算目标扇区中心点对准12点钟位置所需的旋转角度
+      // 目标扇形i的中心位置 = (i + 0.5) * segmentAngle
+      // 要让这个位置对准12点钟（-π/2或3π/2），需要旋转的角度 = 3π/2 - (i + 0.5) * segmentAngle
+      finalRotationAngle =
+        (1.5 * Math.PI - (zeroBasedIndex + 0.5) * segmentAngle) % (2 * Math.PI);
+    } else {
+      // 如果没有指定目标扇区，则随机一个最终角度
+      finalRotationAngle = Math.random() * Math.PI * 2;
+    }
+
+    // 为了让转盘看起来转了好多圈，我们在最终角度上增加若干个 2π
+    const spins = 8; // 修改：增加旋转圈数，从5改为8
+    const toValue = spins * 2 * Math.PI + finalRotationAngle;
+
+    // 重置动画值到0，并开始动画
+    rotationAnim.setValue(0);
+    Animated.timing(rotationAnim, {
+      toValue: toValue,
+      duration: 2000, // 修改：减少动画时长，从4000ms改为2000ms
+      useNativeDriver: true,
+    }).start(() => {
+      // 动画结束后的回调
+      let winningSegment;
+      if (targetSegmentIndex !== undefined) {
+        // --- 修正：同样转换索引来获取结果 ---
+        const zeroBasedIndex = targetSegmentIndex - 1;
+        winningSegment = segments[zeroBasedIndex];
+      } else {
+        // 如果是随机旋转，我们需要根据最终停止的角度来计算是哪个扇区
+        const pointerAngle = 1.5 * Math.PI; // 12点钟位置的角度
+        const normalizedFinalAngle = finalRotationAngle % (2 * Math.PI);
+
+        // 计算指针指向的扇区索引
+        const segmentIndex = Math.floor(
+          ((2 * Math.PI - normalizedFinalAngle + pointerAngle) %
+            (2 * Math.PI)) /
+            segmentAngle
+        );
+        winningSegment = segments[segmentIndex];
+      }
+
+      // 动画结束后，将值重置为最终停止的角度，以便下次旋转
+      rotationAnim.setValue(finalRotationAngle);
+      isSpinning.current = false;
+      onFinished(winningSegment);
+    });
   };
 
   // 使用useImperativeHandle暴露方法给父组件
   useImperativeHandle(ref, () => ({
     spin,
   }));
-
-  const onTimerTick = () => {
-    const duration = new Date().getTime() - spinStartRef.current;
-    let progress = 0;
-    let finished = false;
-    if (duration < upTime) {
-      progress = duration / upTime;
-      angleDeltaRef.current =
-        maxSpeedRef.current * Math.sin((progress * Math.PI) / 2);
-    } else {
-      progress = duration / downTime;
-      angleDeltaRef.current =
-        maxSpeedRef.current * Math.sin((progress * Math.PI) / 2 + Math.PI / 2);
-      if (progress >= 1) finished = true;
-    }
-
-    angleCurrentRef.current += angleDeltaRef.current;
-    while (angleCurrentRef.current >= Math.PI * 2)
-      angleCurrentRef.current -= Math.PI * 2;
-    if (finished) {
-      clearInterval(timerHandleRef.current);
-      timerHandleRef.current = 0;
-      const rotationAdjustment =
-        (angleCurrentRef.current + Math.PI / 2) % (Math.PI * 2);
-      const segmentIndex = Math.floor(
-        (rotationAdjustment / (Math.PI * 2)) * segments.length
-      );
-      const winningSegmentIndex =
-        (segments.length - segmentIndex - 1) % segments.length;
-      const winningSegment = segments[winningSegmentIndex];
-      onFinished(winningSegment);
-    }
-    draw();
-  };
-
-  const draw = () => {
-    svgRef.current?.setNativeProps({
-      style: { transform: [{ rotate: `${angleCurrentRef.current}rad` }] },
-    });
-  };
 
   return (
     <View style={styles.wheelContainer}>
@@ -167,17 +167,27 @@ const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
               position: 'absolute',
               width: size + 65,
               height: size + 65,
-              left: -32.5, // (size + 65 - size) / 2 = 32.5
-              top: -32.5 + 11, // (size + 65 - size) / 2 = 32.5
+              left: -32.5,
+              top: -32.5 + 11,
               zIndex: -1,
             }}
           />
         )}
-        <Svg
-          ref={svgRef}
+
+        <AnimatedSvg
           width={size}
           height={size}
           viewBox={`-${outlineWidth / 2} -${outlineWidth / 2} ${size + outlineWidth} ${size + outlineWidth}`}
+          style={{
+            transform: [
+              {
+                rotate: rotationAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0rad', '1rad'],
+                }),
+              },
+            ],
+          }}
         >
           {showGradient && (
             <Defs>
@@ -210,7 +220,6 @@ const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
               />
             );
           })}
-          {/* 内部渐变覆盖层 - 放在扇形之后 */}
           {showGradient && (
             <Circle
               cx={size / 2}
@@ -222,6 +231,7 @@ const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
           {segments.map((segment, index) => {
             const startAngle = (2 * Math.PI * index) / segments.length;
             const endAngle = (2 * Math.PI * (index + 1)) / segments.length;
+            // eslint-disable-next-line @typescript-eslint/no-shadow
             const segmentAngle = startAngle + (endAngle - startAngle) / 2;
 
             // Text position - moved higher up
@@ -313,7 +323,7 @@ const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
                       segment.textColor || textColors[index % textColors.length]
                     }
                     textAnchor="middle"
-                    fontFamily="Arial"
+                    fontFamily={fontFamily}
                     fontSize="12"
                     transform={`rotate(${textRotation},${textX},${textY})`}
                   >
@@ -341,7 +351,8 @@ const Wheel = forwardRef<WheelRefMethods, WheelComponentProps>((props, ref) => {
             stroke={strokeColor}
             strokeWidth={outlineWidth}
           />
-        </Svg>
+        </AnimatedSvg>
+
         <Image
           source={pinImage}
           resizeMode="contain"
